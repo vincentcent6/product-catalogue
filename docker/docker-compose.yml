@@ -1,0 +1,16 @@
+version: '3.2'
+services:
+  postgres:
+    container_name: product_postgres
+    build: postgres/.
+    environment:
+      POSTGRES_DB: product-catalogue
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      TZ: "Asia/Jakarta"
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    logging:
+      driver: "none"
+  
