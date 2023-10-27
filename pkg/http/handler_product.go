@@ -9,12 +9,6 @@ import (
 	"github.com/vincentcent6/product-catalogue/pkg/response"
 )
 
-type (
-	ProductInput struct {
-		ProductInput productCtrl.ProductInput `json:"product"`
-	}
-)
-
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	ctx := context.TODO()
 	// prepare input obj
