@@ -46,6 +46,7 @@ func convertGetData(input GetProductInput) core.GetInput {
 	if input.Sort != nil {
 		getPrdSort = &core.GetProductSort{
 			CreateTime: input.Sort.CreateTime,
+			AvgRating:  input.Sort.AvgRating,
 		}
 	}
 

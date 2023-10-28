@@ -108,13 +108,17 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	var sort *productCtrl.GetProductSort
 	sortByCreateTimeStr := r.FormValue("sort_ct")
-	if sortByCreateTimeStr != "" {
+	sortByAvgRatingStr := r.FormValue("sort_avg_rating")
+	if sortByCreateTimeStr != "" || sortByAvgRatingStr != "" {
+		sort = &productCtrl.GetProductSort{}
 		sortByCreateTime, _ := strconv.Atoi(sortByCreateTimeStr)
 		if sortByCreateTime > 0 {
-			sort = &productCtrl.GetProductSort{}
-			if sortByCreateTime > 0 {
-				sort.CreateTime = sortByCreateTime
-			}
+			sort.CreateTime = sortByCreateTime
+		}
+
+		sortByAvgRating, _ := strconv.Atoi(sortByAvgRatingStr)
+		if sortByAvgRating > 0 {
+			sort.AvgRating = sortByAvgRating
 		}
 	}
 

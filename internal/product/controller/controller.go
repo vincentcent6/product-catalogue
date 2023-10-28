@@ -60,6 +60,7 @@ type (
 
 	GetProductSort struct {
 		CreateTime int `json:"sort_create_time,omitempty"`
+		AvgRating  int `json:"sort_avg_rating,omitempty"`
 	}
 )
 

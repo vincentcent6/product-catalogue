@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -92,12 +93,20 @@ type (
 
 	GetProductSort struct {
 		CreateTime int `json:"sort_create_time,omitempty"`
+		AvgRating  int `json:"sort_avg_rating,omitempty"`
 	}
 )
 
 const (
 	sortByAsc  = 1
 	sortByDesc = 2
+)
+
+var (
+	productIDField       string = "product_id"
+	avgRating            string = "product_reviews>avg_rating"
+	productReviews       string = "product_reviews"
+	productReviewsRating string = "product_reviews.rating"
 )
 
 func (p *product) CreateProduct(ctx context.Context, data Data) error {
@@ -324,8 +333,40 @@ func getProductsFromES(ctx context.Context, input GetInput) ([]ProductDataWithou
 		}
 	}
 
-	// filter and sort
-	if len(filterQueries) > 0 && len(sortCombinations) > 0 {
+	// for now avg rating will be prioritized and can't be mixed with other filter or sort
+	sortByAvgRating := input.GetProductSort != nil && input.GetProductSort.AvgRating > 0
+	if sortByAvgRating {
+		sortOrder := sortorder.Asc
+		if input.GetProductSort.AvgRating == sortByDesc {
+			sortOrder = sortorder.Desc
+		}
+		searchFunc = searchFunc.Request(&search.Request{
+			Aggregations: map[string]types.Aggregations{
+				"products": {
+					Terms: &types.TermsAggregation{
+						Field: &productIDField,
+						Order: map[string]sortorder.SortOrder{
+							avgRating: sortOrder,
+						},
+					},
+					Aggregations: map[string]types.Aggregations{
+						"product_reviews": {
+							Nested: &types.NestedAggregation{
+								Path: &productReviews,
+							},
+							Aggregations: map[string]types.Aggregations{
+								"avg_rating": {
+									Avg: &types.AverageAggregation{
+										Field: &productReviewsRating,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+	} else if len(filterQueries) > 0 && len(sortCombinations) > 0 { // filter and sort by create time
 		searchFunc = searchFunc.Request(&search.Request{
 			PostFilter: &types.Query{
 				Bool: &types.BoolQuery{
@@ -362,6 +403,31 @@ func getProductsFromES(ctx context.Context, input GetInput) ([]ProductDataWithou
 	if err != nil {
 		return []ProductDataWithoutCreateTime{}, err
 	}
+
+	if sortByAvgRating {
+		mapPrdData := map[int64]ProductDataWithoutCreateTime{}
+		hits := res.Hits.Hits
+		for _, hit := range hits {
+			var prdData ProductDataWithoutCreateTime
+			err := json.Unmarshal(hit.Source_, &prdData)
+			if err != nil {
+				return []ProductDataWithoutCreateTime{}, err
+			}
+			mapPrdData[prdData.ProductID] = prdData
+		}
+
+		re := regexp.MustCompile(`Key\:\d+`)
+		matches := re.FindAllStringSubmatch(fmt.Sprintf("%+v", res.Aggregations[productsIndex]), -1)
+		for _, match := range matches {
+			for _, m := range match {
+				key, _ := strconv.ParseInt(strings.Split(m, ":")[1], 10, 64)
+				prdsData = append(prdsData, mapPrdData[key])
+			}
+		}
+
+		return prdsData, nil
+	}
+
 	hits := res.Hits.Hits
 	for _, hit := range hits {
 		var prdData ProductDataWithoutCreateTime
