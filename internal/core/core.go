@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -9,6 +10,8 @@ import (
 
 var (
 	db *sqlx.DB
+
+	ErrDataNotFound = errors.New("Data not found")
 )
 
 // NewProduct will return Product object

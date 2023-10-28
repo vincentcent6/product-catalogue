@@ -16,6 +16,16 @@ func (p *ctrl) CreateProduct(ctx context.Context, input ProductInput) (result Pr
 	return input, nil
 }
 
+func (p *ctrl) UpdateProduct(ctx context.Context, input UpdateProductInput) (err error) {
+	if err = input.Data.ValidateComplete(); err != nil {
+		return err
+	}
+	if err = prd.UpdateProduct(ctx, convertUpdateData(input)); err != nil {
+		return err
+	}
+	return nil
+}
+
 func convertData(input ProductInput) core.Data {
 	images := []core.ProductImage{}
 	for _, img := range input.Images {
@@ -34,5 +44,12 @@ func convertData(input ProductInput) core.Data {
 		Images:      images,
 		Weight:      input.Weight,
 		Price:       input.Price,
+	}
+}
+
+func convertUpdateData(input UpdateProductInput) core.UpdateInput {
+	return core.UpdateInput{
+		ProductID: input.ProductID,
+		Data:      convertData(input.Data),
 	}
 }

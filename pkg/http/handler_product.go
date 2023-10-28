@@ -32,3 +32,27 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+func UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := context.TODO()
+	// prepare input obj
+	var input productCtrl.UpdateProductInput
+
+	// decode JSON input
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		response.WriteError(w, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	err = prdCtrl.UpdateProduct(ctx, input)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.WriteSuccess(w, http.StatusOK, nil)
+
+	return
+}

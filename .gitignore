@@ -21,3 +21,4 @@
 go.work
 
 vendor/*
+cmd/product-catalogue/product-catalogue

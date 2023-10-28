@@ -9,6 +9,7 @@ func NewRoutes() *chi.Mux {
 
 	// Product
 	router.Post("/product", CreateProduct)
+	router.Put("/product", UpdateProduct)
 
 	return router
 }
