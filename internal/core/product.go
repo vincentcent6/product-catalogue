@@ -14,18 +14,21 @@ type (
 	Product interface {
 		CreateProduct(ctx context.Context, data Data) error
 		UpdateProduct(ctx context.Context, input UpdateInput) error
+		GetProduct(ctx context.Context, inp GetInput) (ProductData, error)
 	}
 	product struct{}
 
+	ProductImages []ProductImage
+
 	Data struct {
-		SKU         int64          `db:"sku" json:"sku,omitempty"`
-		Title       string         `db:"title" json:"title,omitempty"`
-		Description string         `db:"description" json:"description,omitempty"`
-		Category    string         `db:"category" json:"category,omitempty"`
-		Etalase     string         `db:"etalase" json:"etalase,omitempty"`
-		Images      []ProductImage `db:"images" json:"images,omitempty"`
-		Weight      float64        `db:"weight" json:"weight,omitempty"`
-		Price       int64          `db:"price" json:"price,omitempty"`
+		SKU         int64         `db:"sku" json:"sku,omitempty"`
+		Title       string        `db:"title" json:"title,omitempty"`
+		Description string        `db:"description" json:"description,omitempty"`
+		Category    string        `db:"category" json:"category,omitempty"`
+		Etalase     string        `db:"etalase" json:"etalase,omitempty"`
+		Images      ProductImages `db:"images" json:"images,omitempty"`
+		Weight      float64       `db:"weight" json:"weight,omitempty"`
+		Price       int64         `db:"price" json:"price,omitempty"`
 	}
 
 	UpdateInput struct {
@@ -33,9 +36,25 @@ type (
 		Data      Data
 	}
 
+	ProductData struct {
+		ProductID   int64         `db:"product_id" json:"product_id,omitempty"`
+		SKU         int64         `db:"sku" json:"sku,omitempty"`
+		Title       string        `db:"title" json:"title,omitempty"`
+		Description string        `db:"description" json:"description,omitempty"`
+		Category    string        `db:"category" json:"category,omitempty"`
+		Etalase     string        `db:"etalase" json:"etalase,omitempty"`
+		Images      ProductImages `db:"images" json:"images,omitempty"`
+		Weight      float64       `db:"weight" json:"weight,omitempty"`
+		Price       int64         `db:"price" json:"price,omitempty"`
+	}
+
 	ProductImage struct {
 		URL         string `db:"url" json:"url,omitempty"`
 		Description string `db:"description" json:"description,omitempty"`
+	}
+
+	GetInput struct {
+		ProductID int64 `db:"product_id" json:"product_id,omitempty"`
 	}
 )
 
@@ -113,19 +132,37 @@ func (p *product) UpdateProduct(ctx context.Context, input UpdateInput) error {
 	return nil
 }
 
-func (img ProductImage) Scan(val interface{}) error {
+// for now, get product will return 1 result
+func (p *product) GetProduct(ctx context.Context, inp GetInput) (ProductData, error) {
+	params := []string{""}
+	if inp.ProductID != 0 {
+		params[0] = fmt.Sprintf("product_id=%d", inp.ProductID)
+	}
+	paramsStr := strings.Join(params, ", ")
+
+	prd := []ProductData{}
+	err := db.Select(&prd, fmt.Sprintf(qGetProduct, paramsStr))
+	if err != nil {
+		fmt.Println(err)
+		return ProductData{}, err
+	}
+	if len(prd) == 0 {
+		return ProductData{}, ErrDataNotFound
+	}
+	return prd[0], nil
+}
+
+func (images ProductImages) Value() (driver.Value, error) {
+	return json.Marshal(images)
+}
+
+func (images *ProductImages) Scan(val interface{}) (err error) {
 	switch v := val.(type) {
 	case []byte:
-		json.Unmarshal(v, &img)
-		return nil
+		return json.Unmarshal(v, images)
 	case string:
-		json.Unmarshal([]byte(v), &img)
-		return nil
+		return json.Unmarshal([]byte(v), &images)
 	default:
 		return errors.New(fmt.Sprintf("Unsupported type: %T", v))
 	}
-}
-
-func (img ProductImage) Value() (driver.Value, error) {
-	return json.Marshal(img)
 }

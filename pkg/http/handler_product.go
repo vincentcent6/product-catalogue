@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	productCtrl "github.com/vincentcent6/product-catalogue/internal/controller/product"
 	"github.com/vincentcent6/product-catalogue/pkg/response"
@@ -53,6 +54,29 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WriteSuccess(w, http.StatusOK, nil)
+
+	return
+}
+
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := context.TODO()
+
+	productIDStr := r.FormValue("product_id")
+	productID, err := strconv.ParseInt(productIDStr, 10, 64)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	res, err := prdCtrl.GetProduct(ctx, productCtrl.GetProductInput{
+		ProductID: productID,
+	})
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.WriteSuccess(w, http.StatusOK, res)
 
 	return
 }

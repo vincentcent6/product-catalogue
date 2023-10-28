@@ -17,7 +17,7 @@ func (p *ctrl) CreateProduct(ctx context.Context, input ProductInput) (result Pr
 }
 
 func (p *ctrl) UpdateProduct(ctx context.Context, input UpdateProductInput) (err error) {
-	if err = input.Data.ValidateComplete(); err != nil {
+	if err = input.Attribute.ValidateComplete(); err != nil {
 		return err
 	}
 	if err = prd.UpdateProduct(ctx, convertUpdateData(input)); err != nil {
@@ -50,6 +50,6 @@ func convertData(input ProductInput) core.Data {
 func convertUpdateData(input UpdateProductInput) core.UpdateInput {
 	return core.UpdateInput{
 		ProductID: input.ProductID,
-		Data:      convertData(input.Data),
+		Data:      convertData(input.Attribute),
 	}
 }

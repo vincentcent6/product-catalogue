@@ -15,4 +15,11 @@ const (
 		WHERE product_id = $1
 		returning product_id
 	`
+
+	// qGetProduct is query to get product
+	qGetProduct = `
+		SELECT product_id, sku, title, description, category, etalase, images, weight, price
+		FROM public.product
+		WHERE %v
+	`
 )

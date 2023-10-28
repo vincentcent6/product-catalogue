@@ -12,6 +12,7 @@ type (
 	Controller interface {
 		CreateProduct(ctx context.Context, input ProductInput) (result ProductInput, err error)
 		UpdateProduct(ctx context.Context, input UpdateProductInput) (err error)
+		GetProduct(ctx context.Context, input GetProductInput) (result GetProductResult, err error)
 	}
 	ctrl struct{}
 
@@ -33,7 +34,16 @@ type (
 
 	UpdateProductInput struct {
 		ProductID int64        `json:"product_id,omitempty"`
-		Data      ProductInput `json:"data,omitempty"`
+		Attribute ProductInput `json:"attribute,omitempty"`
+	}
+
+	GetProductInput struct {
+		ProductID int64 `json:"product_id,omitempty"`
+	}
+
+	GetProductResult struct {
+		ProductID int64        `json:"product_id,omitempty"`
+		Attribute ProductInput `json:"attribute,omitempty"`
 	}
 )
 
