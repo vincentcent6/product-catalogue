@@ -13,5 +13,8 @@ func NewRoutes() *chi.Mux {
 	router.Get("/product", GetProduct)
 	router.Get("/products", GetProducts)
 
+	// Product review
+	router.Post("/product/review", CreateProductReview)
+
 	return router
 }

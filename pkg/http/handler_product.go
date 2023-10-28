@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	productCtrl "github.com/vincentcent6/product-catalogue/internal/controller/product"
+	productCtrl "github.com/vincentcent6/product-catalogue/internal/product/controller"
 	"github.com/vincentcent6/product-catalogue/pkg/response"
 )
 

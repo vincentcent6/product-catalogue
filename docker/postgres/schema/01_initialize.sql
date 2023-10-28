@@ -18,5 +18,6 @@ CREATE TABLE public.product_review (
     review_id bigserial NOT NULL,
     rating smallint NOT NULL,
     review_comment text NOT NULL,
-    CONSTRAINT product_review_pkey FOREIGN KEY (product_id) REFERENCES public.product (product_id)
+    CONSTRAINT product_review_pkey PRIMARY KEY (review_id),
+    CONSTRAINT product_review_fkey FOREIGN KEY (product_id) REFERENCES public.product (product_id)
 );
