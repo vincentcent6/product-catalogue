@@ -80,3 +80,54 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+func GetProducts(w http.ResponseWriter, r *http.Request) {
+	ctx := context.TODO()
+
+	sku := r.FormValue("sku")
+	title := r.FormValue("title")
+	description := r.FormValue("description")
+	category := r.FormValue("category")
+
+	var filter *productCtrl.GetProductFilter
+	if sku != "" || title != "" || description != "" || category != "" {
+		filter = &productCtrl.GetProductFilter{}
+		if sku != "" {
+			filter.SKU = sku
+		}
+		if title != "" {
+			filter.Title = title
+		}
+		if description != "" {
+			filter.Description = description
+		}
+		if category != "" {
+			filter.Category = category
+		}
+	}
+
+	var sort *productCtrl.GetProductSort
+	sortByCreateTimeStr := r.FormValue("sort_ct")
+	if sortByCreateTimeStr != "" {
+		sortByCreateTime, _ := strconv.Atoi(sortByCreateTimeStr)
+		if sortByCreateTime > 0 {
+			sort = &productCtrl.GetProductSort{}
+			if sortByCreateTime > 0 {
+				sort.CreateTime = sortByCreateTime
+			}
+		}
+	}
+
+	res, err := prdCtrl.GetProducts(ctx, productCtrl.GetProductInput{
+		Filter: filter,
+		Sort:   sort,
+	})
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.WriteSuccess(w, http.StatusOK, res)
+
+	return
+}

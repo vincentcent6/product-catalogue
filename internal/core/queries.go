@@ -6,6 +6,7 @@ const (
 		INSERT INTO public.product
 		(sku, title, description, category, etalase, images, weight, price)
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING product_id, create_time
 	`
 
 	// qUpdateProduct is query to update product

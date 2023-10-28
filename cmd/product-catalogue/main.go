@@ -7,6 +7,7 @@ import (
 
 	"github.com/vincentcent6/product-catalogue/pkg/config"
 	dbClient "github.com/vincentcent6/product-catalogue/pkg/database"
+	esClient "github.com/vincentcent6/product-catalogue/pkg/elasticsearch"
 	httpRoutes "github.com/vincentcent6/product-catalogue/pkg/http"
 )
 
@@ -19,6 +20,11 @@ func main() {
 	if err != nil {
 		log.Fatalln("failed to init database", err.Error())
 	}
+	err = esClient.InitES()
+	if err != nil {
+		log.Fatalln("failed to init elasticsearch", err.Error())
+	}
+
 	// init http module
 	httpRoutes.Init()
 

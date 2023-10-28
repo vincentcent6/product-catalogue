@@ -13,11 +13,12 @@ type (
 		CreateProduct(ctx context.Context, input ProductInput) (result ProductInput, err error)
 		UpdateProduct(ctx context.Context, input UpdateProductInput) (err error)
 		GetProduct(ctx context.Context, input GetProductInput) (result GetProductResult, err error)
+		GetProducts(ctx context.Context, input GetProductInput) (result []GetProductResult, err error)
 	}
 	ctrl struct{}
 
 	ProductInput struct {
-		SKU         int64          `json:"sku,omitempty"`
+		SKU         string         `json:"sku,omitempty"`
 		Title       string         `json:"title,omitempty"`
 		Description string         `json:"description,omitempty"`
 		Category    string         `json:"category,omitempty"`
@@ -38,19 +39,32 @@ type (
 	}
 
 	GetProductInput struct {
-		ProductID int64 `json:"product_id,omitempty"`
+		ProductID int64             `json:"product_id,omitempty"`
+		Filter    *GetProductFilter `json:"filter,omitempty"`
+		Sort      *GetProductSort   `json:"sort,omitempty"`
 	}
 
 	GetProductResult struct {
 		ProductID int64        `json:"product_id,omitempty"`
 		Attribute ProductInput `json:"attribute,omitempty"`
 	}
+
+	GetProductFilter struct {
+		SKU         string `json:"sku,omitempty"`
+		Title       string `json:"title,omitempty"`
+		Description string `json:"description,omitempty"`
+		Category    string `json:"category,omitempty"`
+	}
+
+	GetProductSort struct {
+		CreateTime int `json:"sort_create_time,omitempty"`
+	}
 )
 
 var (
 	prd core.Product
 
-	ErrSKULessThanZero    = errors.New("SKU is less than zero")
+	ErrSKUIsEmpty         = errors.New("SKU is empty")
 	ErrTitleIsEmpty       = errors.New("Title is empty")
 	ErrCategoryIsEmpty    = errors.New("Category is empty")
 	ErrDescriptionIsEmpty = errors.New("Description is empty")
@@ -77,8 +91,8 @@ func prepare() (err error) {
 }
 
 func (p ProductInput) ValidateComplete() error {
-	if p.SKU < 0 {
-		return ErrSKULessThanZero
+	if p.SKU == "" {
+		return ErrSKUIsEmpty
 	} else if p.Title == "" {
 		return ErrTitleIsEmpty
 	} else if p.Description == "" {

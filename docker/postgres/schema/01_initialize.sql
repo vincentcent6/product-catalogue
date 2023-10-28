@@ -1,7 +1,7 @@
 drop table if exists product cascade;
 CREATE TABLE public.product (
     product_id bigserial NOT NULL,
-    sku integer NOT NULL,
+    sku text NOT NULL,
     title text NOT NULL,
     description text NOT NULL,
     category text NOT NULL,
@@ -11,4 +11,12 @@ CREATE TABLE public.product (
     price integer NOT NULL,
     create_time timestamp NOT NULL DEFAULT now(),
     CONSTRAINT product_pkey PRIMARY KEY (product_id)
+);
+
+CREATE TABLE public.product_review (
+    product_id bigint NOT NULL,
+    review_id bigserial NOT NULL,
+    rating smallint NOT NULL,
+    review_comment text NOT NULL,
+    CONSTRAINT product_review_pkey FOREIGN KEY (product_id) REFERENCES public.product (product_id)
 );
